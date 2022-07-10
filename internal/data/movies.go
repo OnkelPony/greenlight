@@ -25,10 +25,10 @@ type MovieModel struct {
 
 func (m MovieModel) Insert(movie *Movie) error {
 	query := `
-        INSERT INTO movies (title, year, runtime, genres) 
-        VALUES ($1, $2, $3, $4)
+        INSERT INTO movies (title, year, runtime, genres, seen) 
+        VALUES ($1, $2, $3, $4, $5)
         RETURNING id, created_at, version`
-	args := []any{movie.Title, movie.Year, movie.Runtime, pq.Array(movie.Genres)}
+	args := []any{movie.Title, movie.Year, movie.Runtime, pq.Array(movie.Genres), movie.Seen}
 	return m.DB.QueryRow(query, args...).Scan(&movie.ID, &movie.CreatedAt, &movie.Version)
 }
 
@@ -37,7 +37,7 @@ func (m MovieModel) Get(id int64) (*Movie, error) {
 		return nil, ErrRecordNotFound
 	}
 	query := `
-        SELECT id, created_at, title, year, runtime, genres, version
+        SELECT id, created_at, title, year, runtime, genres, version, seen
         FROM movies
         WHERE id = $1`
 	var movie Movie
@@ -49,6 +49,7 @@ func (m MovieModel) Get(id int64) (*Movie, error) {
 		&movie.Runtime,
 		pq.Array(&movie.Genres),
 		&movie.Version,
+		&movie.Seen,
 	)
 	if err != nil {
 		switch {
@@ -64,8 +65,8 @@ func (m MovieModel) Get(id int64) (*Movie, error) {
 func (m MovieModel) Update(movie *Movie) error {
 	query := `
         UPDATE movies 
-        SET title = $1, year = $2, runtime = $3, genres = $4, version = version + 1
-        WHERE id = $5
+        SET title = $1, year = $2, runtime = $3, genres = $4, version = version + 1, seen = $5
+        WHERE id = $6
         RETURNING version
         `
 	args := []any{
@@ -73,6 +74,7 @@ func (m MovieModel) Update(movie *Movie) error {
 		movie.Year,
 		movie.Runtime,
 		pq.Array(movie.Genres),
+		movie.Seen,
 		movie.ID,
 	}
 	return m.DB.QueryRow(query, args...).Scan(&movie.Version)

@@ -14,6 +14,7 @@ func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Reques
 		Year    int32        `json:"year"`
 		Runtime data.Runtime `json:"runtime"`
 		Genres  []string     `json:"genres"`
+		Seen    bool         `json:"seen,string"`
 	}
 	err := app.readJSON(w, r, &input)
 	if err != nil {
@@ -25,6 +26,7 @@ func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Reques
 		Year:    input.Year,
 		Runtime: input.Runtime,
 		Genres:  input.Genres,
+		Seen:    input.Seen,
 	}
 	v := validator.New()
 	if data.ValidateMovie(v, movie); !v.Valid() {
@@ -108,6 +110,7 @@ func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Reques
 		Year    *int32        `json:"year"`
 		Runtime *data.Runtime `json:"runtime"`
 		Genres  []string      `json:"genres"`
+		Seen    *bool         `json:"seen,string"`
 	}
 	err = app.readJSON(w, r, &input)
 	if err != nil {
@@ -125,6 +128,9 @@ func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Reques
 	}
 	if input.Genres != nil {
 		movie.Genres = input.Genres
+	}
+	if input.Seen != nil {
+		movie.Seen = *input.Seen
 	}
 	v := validator.New()
 	if data.ValidateMovie(v, movie); !v.Valid() {

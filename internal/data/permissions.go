@@ -8,7 +8,7 @@ import (
 
 type Permissions []string
 
-func (p Permissions) include(code string) bool {
+func (p Permissions) Include(code string) bool {
 	for i := range p {
 		if p[i] == code {
 			return true

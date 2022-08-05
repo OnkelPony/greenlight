@@ -9,6 +9,7 @@ import (
 	"github.com/OnkelPony/greenlight/internal/mailer"
 	_ "github.com/lib/pq"
 	"os"
+	"strings"
 	"sync"
 	"time"
 )
@@ -26,7 +27,10 @@ const version = "1.0.0"
 type config struct {
 	port int
 	env  string
-	db   struct {
+	cors struct {
+		trustedOrigins []string
+	}
+	db struct {
 		dsn          string
 		maxOpenConns int
 		maxIdleConns int
@@ -70,6 +74,10 @@ func main() {
 	flag.StringVar(&cfg.smtp.username, "smtp-username", "839e7afee37bc6", "SMTP username")
 	flag.StringVar(&cfg.smtp.password, "smtp-password", "92241c0e839b25", "SMTP password")
 	flag.StringVar(&cfg.smtp.sender, "smtp-sender", "Greenlight <no-reply@greenlight.gam.as>", "SMTP sender")
+	flag.Func("cors-trusted-origins", "Trusted CORS origins (space separated)", func(val string) error {
+		cfg.cors.trustedOrigins = strings.Fields(val)
+		return nil
+	})
 	flag.Parse()
 	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
 	db, err := openDB(cfg)

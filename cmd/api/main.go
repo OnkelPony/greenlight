@@ -5,9 +5,11 @@ import (
 	"database/sql"
 	"expvar"
 	"flag"
+	"fmt"
 	"github.com/OnkelPony/greenlight/internal/data"
 	"github.com/OnkelPony/greenlight/internal/jsonlog"
 	"github.com/OnkelPony/greenlight/internal/mailer"
+	"github.com/OnkelPony/greenlight/internal/vcs"
 	_ "github.com/lib/pq"
 	"os"
 	"runtime"
@@ -19,7 +21,7 @@ import (
 // Declare a string containing the application version number. Later in the book we'll
 // generate this automatically at build time, but for now we'll just store the version
 // number as a hard-coded global constant.
-const version = "1.0.0"
+var version = vcs.Version()
 
 // Define a config struct to hold all the configuration settings for our application.
 // For now, the only configuration settings will be the network port that we want the
@@ -80,7 +82,12 @@ func main() {
 		cfg.cors.trustedOrigins = strings.Fields(val)
 		return nil
 	})
+	displayVersion := flag.Bool("version", false, "Display version and exit")
 	flag.Parse()
+	if *displayVersion {
+		fmt.Printf("Version:\t%s\n", version)
+		os.Exit(0)
+	}
 	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
 	db, err := openDB(cfg)
 	if err != nil {
